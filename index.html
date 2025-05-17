@@ -240,12 +240,24 @@
 
     // Capture image function
     function captureImage(targetPreview) {
-      canvas.width = 1400;
-      canvas.height = 1062;
-      ctx.drawImage(video, 0, 0, 1315, 1062);
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const size = Math.min(vw, vh);
+
+      canvas.width = size;
+      canvas.height = size;
+
+      ctx.drawImage(
+        video,
+        (vw - size) / 2, (vh - size) / 2, // crop từ giữa
+        size, size,
+        0, 0,
+        size, size
+      );
+
       targetPreview.src = canvas.toDataURL('image/png');
       targetPreview.style.display = 'block';
-      // Flash effect
+
       flash.classList.add('active');
       setTimeout(() => flash.classList.remove('active'), 200);
     }
