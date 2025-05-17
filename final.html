@@ -3,44 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photobooth cùng Gấc Café ^^</title>
-  <link rel="icon" type="image/x-icon" href="./Untitled-3-02.png">
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script>
-    emailjs.init("B2mXKIg4ywhSs4hMf"); // Public key
-  </script>
+  <title>Capture and Merge Images</title>
   <style>
-    :root {
-      --main-color: #a62025;
-      --white: #fff;
-      --font: 'Segoe UI', sans-serif;
-    }
     body {
-      font-family: var(--font);
-      background-color: var(--main-color);
-      color: var(--white);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 20px;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #a62025; /* Updated background color for entire website */
     }
 
     .container {
       position: relative;
       width: 1585px;
       height: 2841px;
-      background-image: url('https://res.cloudinary.com/dmanl2e81/image/upload/v1747480045/f1-01_y5nhsq.jpg');
+      background-image: url('https://i.ibb.co/k27TSJ86/f1-01.jpg');
       background-size: cover;
       background-position: center;
-    }
-
-    .camera-container,
-    .result-container {
-      width: 100%;
-      max-width: 600px;
-      margin: auto;
-      text-align: center;
     }
 
     .captured-image-1 {
@@ -75,50 +56,47 @@
       z-index: 2;
     }
 
-    video {
-      width: 100%;
-      max-width: 70vmin;      /* đảm bảo vuông cả trên portrait và landscape */
-      max-height: 70vmin;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      border: 2px solid #ccc;
-      transform: scaleX(-1); /* Flip video for selfie-like preview */
-      border-radius: 16px;
+    .camera-container {
+      text-align: center;
+      max-width: 2560px;
+      padding: 20px;
+      border-radius: 10px;
     }
 
-    canvas {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      border: 2px solid #fff;
-      margin-bottom: 20px;
-      object-fit: contain;
+    .result-container {
+      text-align: center;
+      display: none; /* Hidden initially */
+    }
+
+    video {
+      width: 2560px;
+      height: 1920px;
+      border: 1px solid #ccc;
+      transform: scaleX(-1); /* Flip video for selfie-like preview */
     }
 
     button {
-      padding: 15px 25px;
-      font-size: 18px;
-      margin: 10px 5px;
-      border: none;
-      border-radius: 8px;
-      background-color: var(--white);
-      color: var(--main-color);
-      font-weight: bold;
+      margin: 30px;
+      padding: 40px 60px;
+      font-size: 50px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      background-color: #ffffff; /* Changed to white for contrast */
+      color: #a62025; /* Text color matches the background for consistency */
+      border: 2px solid #ffffff;
+      border-radius: 10px;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     button:hover {
-      background-color: var(--main-color);
-      color: var(--white);
-      border: 2px solid var(--white);
+      background-color: #a62025;
+      color: #ffffff;
+      border: 2px solid #ffffff;
     }
 
     #countdown {
-      font-size: 48px;
-      font-weight: bold;
-      margin-bottom: 20px;
+      font-size: 96px;
+      color: white; /* Already white for contrast */
+      margin: 40px;
     }
 
     .flash {
@@ -138,55 +116,12 @@
       transition: opacity 0.2s;
     }
 
-    .hidden {
-      display: none;
-    }
-    input[type="text"],
-    input[type="email"] {
-      width: 100%;
-      max-width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 6px;
-      outline: none;
-    }
-    form {
-      margin-top: 20px;
-    }
-    @media (min-width: 768px) {
-    button {
-      font-size: 20px;
-      padding: 18px 30px;
-    }
-
-    input[type="text"],
-    input[type="email"] {
-      font-size: 18px;
-    }
-
-    #countdown {
-      font-size: 64px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-      body {
-        padding: 40px;
-      }
-
-      .camera-container,
-      .result-container {
-        max-width: 800px;
-      }
-
-      button {
-        font-size: 22px;
-      }
+    #preview-canvas {
+      width: 1000px;
+      height: 1791px;
+      border: 1px solid #ccc;
     }
   </style>
-
 </head>
 <body>
   <div class="camera-container" id="camera-container">
@@ -199,16 +134,11 @@
     <canvas id="preview-canvas" width="1585" height="2841"></canvas>
     <br>
     <button id="retake">Chụp lại</button>
-    <form id="send-form">
-      <input type="text" id="user-name" placeholder="Họ và tên" required />
-      <input type="email" id="user-email" placeholder="Email của bạn" autocomplete="email" required />
-      <button type="submit">Gửi ảnh qua Email</button>
-    </form>
   </div>
   <div class="container" style="display: none;">
     <img id="preview1" class="captured-image-1" style="display: none;">
     <img id="preview2" class="captured-image-2" style="display: none;">
-    <img src="https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png" class="top-layer">
+    <img src="https://i.ibb.co/4wDZ1sDF/frame-01.png" class="top-layer">
   </div>
   <div class="flash" id="flash"></div>
   <canvas id="canvas" style="display: none;"></canvas>
@@ -226,7 +156,6 @@
     const previewCtx = previewCanvas.getContext('2d');
     const cameraContainer = document.getElementById('camera-container');
     const resultContainer = document.getElementById('result-container');
-    const form = document.getElementById("send-form");
 
     // Start camera
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -255,13 +184,11 @@
       previewCanvas.width = 1585;
       previewCanvas.height = 2841;
       const bgImage = new Image();
-      bgImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
-      bgImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480045/f1-01_y5nhsq.jpg';
+      bgImage.src = 'https://i.ibb.co/k27TSJ86/f1-01.jpg';
       bgImage.onload = () => {
         previewCtx.drawImage(bgImage, 0, 0, 1585, 2841);
         if (preview1.src) {
           const img1 = new Image();
-          img1.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
           img1.src = preview1.src;
           img1.onload = () => {
             previewCtx.save();
@@ -270,7 +197,6 @@
             previewCtx.restore();
             if (preview2.src) {
               const img2 = new Image();
-              img2.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
               img2.src = preview2.src;
               img2.onload = () => {
                 previewCtx.save();
@@ -278,16 +204,14 @@
                 previewCtx.drawImage(img2, -1585 + 150, 1605, 1400, 1062); // Updated to 1550px as requested
                 previewCtx.restore();
                 const topImage = new Image();
-                topImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
-                topImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png';
+                topImage.src = 'https://i.ibb.co/4wDZ1sDF/frame-01.png';
                 topImage.onload = () => {
                   previewCtx.drawImage(topImage, 0, 0, 1585, 2841);
                 };
               };
             } else {
               const topImage = new Image();
-              topImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
-              topImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png';
+              topImage.src = 'https://i.ibb.co/4wDZ1sDF/frame-01.png';
               topImage.onload = () => {
                 previewCtx.drawImage(topImage, 0, 0, 1585, 2841);
               };
@@ -295,8 +219,7 @@
           };
         } else {
           const topImage = new Image();
-          topImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
-          topImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png';
+          topImage.src = 'https://i.ibb.co/4wDZ1sDF/frame-01.png';
           topImage.onload = () => {
             previewCtx.drawImage(topImage, 0, 0, 1585, 2841);
           };
@@ -351,48 +274,9 @@
       cameraContainer.style.display = 'block';
     }
 
-    form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const name = document.getElementById("user-name").value;
-  const email = document.getElementById("user-email").value;
-
-  previewCanvas.toBlob(async (blob) => {
-    const formData = new FormData();
-    formData.append("file", blob);
-    formData.append("upload_preset", "ml_default"); // Upload preset của bạn
-
-    try {
-      const res = await fetch("https://api.cloudinary.com/v1_1/dmanl2e81/auto/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      const imageUrl = data.secure_url;
-
-      // Gửi email
-      await emailjs.send("service_nqzmiuk", "template_i9ox99o", {
-        from_name: name,
-        from_email: email,
-        message: `${imageUrl}`,
-      });
-
-      alert("Gửi email thành công!");
-      form.reset();
-    } catch (err) {
-      console.error("Lỗi:", err);
-      alert("Có lỗi xảy ra khi gửi email.");
-    }
-  }, "image/png");
-});
-
     // Event listeners
     captureButton.addEventListener('click', startCapture);
     retakeButton.addEventListener('click', retakePhotos);
-
-    function openPopup(url) {
-  window.open(url, "_blank", "width=600,height=600");
-}
-
   </script>
 </body>
 </html>
