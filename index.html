@@ -240,15 +240,41 @@
 
     // Capture image function
     function captureImage(targetPreview) {
-      canvas.width = 1400;
-      canvas.height = 1062;
-      ctx.drawImage(video, 0, 0, 1315, 1062);
-      targetPreview.src = canvas.toDataURL('image/png');
-      targetPreview.style.display = 'block';
-      // Flash effect
-      flash.classList.add('active');
-      setTimeout(() => flash.classList.remove('active'), 200);
-    }
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+
+  const targetWidth = 1315;
+  const targetHeight = 1062;
+  const targetRatio = targetWidth / targetHeight;
+
+  let sx, sy, sWidth, sHeight;
+
+  if (vw / vh > targetRatio) {
+    // Video quá rộng, crop chiều ngang
+    sHeight = vh;
+    sWidth = vh * targetRatio;
+    sx = (vw - sWidth) / 2;
+    sy = 0;
+  } else {
+    // Video quá cao, crop chiều dọc
+    sWidth = vw;
+    sHeight = vw / targetRatio;
+    sx = 0;
+    sy = (vh - sHeight) / 2;
+  }
+
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+
+  targetPreview.src = canvas.toDataURL('image/png');
+  targetPreview.style.display = 'block';
+
+  flash.classList.add('active');
+  setTimeout(() => flash.classList.remove('active'), 200);
+}
+
 
     // Update preview canvas
     function updatePreview() {
