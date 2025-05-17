@@ -15,9 +15,7 @@
       --white: #fff;
       --font: 'Segoe UI', sans-serif;
     }
-
     body {
-      margin: 0;
       font-family: var(--font);
       background-color: var(--main-color);
       color: var(--white);
@@ -28,6 +26,15 @@
       padding: 20px;
     }
 
+    .container {
+      position: relative;
+      width: 1585px;
+      height: 2841px;
+      background-image: url('https://res.cloudinary.com/dmanl2e81/image/upload/v1747480045/f1-01_y5nhsq.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+
     .camera-container,
     .result-container {
       width: 100%;
@@ -36,7 +43,50 @@
       text-align: center;
     }
 
-    video, canvas {
+    .captured-image-1 {
+      position: absolute;
+      width: 1400px;
+      height: 1062px;
+      top: 390px;
+      right: 120px;
+      object-fit: cover;
+      z-index: 1;
+      transform: scaleX(-1); /* Flip horizontally */
+    }
+
+    .captured-image-2 {
+      position: absolute;
+      width: 1400px;
+      height: 1062px;
+      top: 1605px; /* Updated to 1550px as requested */
+      left: 120px; /* Already at 135px, kept as is */
+      object-fit: cover;
+      z-index: 1;
+      transform: scaleX(-1); /* Flip horizontally */
+    }
+
+    .top-layer {
+      position: absolute;
+      width: 1585px;
+      height: 2841px;
+      top: 0;
+      left: 0;
+      object-fit: cover;
+      z-index: 2;
+    }
+
+    video {
+      width: 100%;
+      max-width: 70vmin;      /* đảm bảo vuông cả trên portrait và landscape */
+      max-height: 70vmin;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border: 2px solid #ccc;
+      transform: scaleX(-1); /* Flip video for selfie-like preview */
+      border-radius: 16px;
+    }
+
+    canvas {
       width: 100%;
       max-width: 100%;
       height: auto;
@@ -65,20 +115,10 @@
       border: 2px solid var(--white);
     }
 
-    input[type="text"],
-    input[type="email"] {
-      width: 100%;
-      max-width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 6px;
-      outline: none;
-    }
-
-    form {
-      margin-top: 20px;
+    #countdown {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
     .flash {
@@ -98,42 +138,40 @@
       transition: opacity 0.2s;
     }
 
-    #countdown {
-      font-size: 48px;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
     .hidden {
       display: none;
     }
-
-    #share-buttons {
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      max-width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+    }
+    form {
       margin-top: 20px;
     }
-
-    #share-buttons button {
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-
     @media (min-width: 768px) {
-      button {
-        font-size: 20px;
-        padding: 18px 30px;
-      }
-
-      input[type="text"],
-      input[type="email"] {
-        font-size: 18px;
-      }
-
-      #countdown {
-        font-size: 64px;
-      }
+    button {
+      font-size: 20px;
+      padding: 18px 30px;
     }
 
-    @media (min-width: 1024px) {
+    input[type="text"],
+    input[type="email"] {
+      font-size: 18px;
+    }
+
+    #countdown {
+      font-size: 64px;
+    }
+  }
+
+  @media (min-width: 1024px) {
       body {
         padding: 40px;
       }
