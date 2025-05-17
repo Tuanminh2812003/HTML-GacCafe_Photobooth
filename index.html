@@ -240,15 +240,29 @@
 
     // Capture image function
     function captureImage(targetPreview) {
-      canvas.width = 1400;
-      canvas.height = 1062;
-      ctx.drawImage(video, 0, 0, 1315, 1062);
-      targetPreview.src = canvas.toDataURL('image/png');
-      targetPreview.style.display = 'block';
-      // Flash effect
-      flash.classList.add('active');
-      setTimeout(() => flash.classList.remove('active'), 200);
-    }
+  const videoWidth = video.videoWidth;
+  const videoHeight = video.videoHeight;
+  const size = Math.min(videoWidth, videoHeight); // lấy chiều ngắn hơn để cắt vuông
+
+  canvas.width = size;
+  canvas.height = size;
+
+  ctx.drawImage(
+    video,
+    (videoWidth - size) / 2,  // bắt đầu từ giữa
+    (videoHeight - size) / 2,
+    size, size,               // vùng lấy từ video
+    0, 0,
+    size, size                // vùng ghi ra canvas
+  );
+
+  targetPreview.src = canvas.toDataURL('image/png');
+  targetPreview.style.display = 'block';
+
+  // Hiệu ứng flash
+  flash.classList.add('active');
+  setTimeout(() => flash.classList.remove('active'), 200);
+}
 
     // Update preview canvas
     function updatePreview() {
