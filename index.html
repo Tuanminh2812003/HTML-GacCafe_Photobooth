@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photobooth cùng Gấc Café ^^</title>
+  <link rel="icon" type="image/x-icon" href="./Untitled-3-02.png">
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    emailjs.init("B2mXKIg4ywhSs4hMf"); // Public key
+  </script>
+  <style>
+    :root {
+      --main-color: #a62025;
+      --white: #fff;
+      --font: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background-color: var(--main-color);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+    }
+
+    .camera-container,
+    .result-container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+    }
+
+    video, canvas {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 2px solid #fff;
+      margin-bottom: 20px;
+      object-fit: contain;
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      margin: 10px 5px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--white);
+      color: var(--main-color);
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--main-color);
+      color: var(--white);
+      border: 2px solid var(--white);
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      max-width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+
+    .flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .flash.active {
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    #countdown {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #share-buttons {
+      margin-top: 20px;
+    }
+
+    #share-buttons button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+
+    @media (min-width: 768px) {
+      button {
+        font-size: 20px;
+        padding: 18px 30px;
+      }
+
+      input[type="text"],
+      input[type="email"] {
+        font-size: 18px;
+      }
+
+      #countdown {
+        font-size: 64px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      body {
+        padding: 40px;
+      }
+
+      .camera-container,
+      .result-container {
+        max-width: 800px;
+      }
+
+      button {
+        font-size: 22px;
+      }
+    }
+  </style>
+
+</head>
+<body>
+  <div class="camera-container" id="camera-container">
+    <video id="camera" autoplay></video>
+    <div id="countdown"></div>
+    <br>
+    <button id="capture">Chụp hình</button>
+  </div>
+  <div class="result-container" id="result-container">
+    <canvas id="preview-canvas" width="1585" height="2841"></canvas>
+    <br>
+    <button id="retake">Chụp lại</button>
+    <form id="send-form">
+      <input type="text" id="user-name" placeholder="Họ và tên" required />
+      <input type="email" id="user-email" placeholder="Email của bạn" autocomplete="email" required />
+      <button type="submit">Gửi ảnh qua Email</button>
+    </form>
+  </div>
+  <div class="container" style="display: none;">
+    <img id="preview1" class="captured-image-1" style="display: none;">
+    <img id="preview2" class="captured-image-2" style="display: none;">
+    <img src="https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png" class="top-layer">
+  </div>
+  <div class="flash" id="flash"></div>
+  <canvas id="canvas" style="display: none;"></canvas>
+  <script>
+    const video = document.getElementById('camera');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const captureButton = document.getElementById('capture');
+    const retakeButton = document.getElementById('retake');
+    const countdownDisplay = document.getElementById('countdown');
+    const preview1 = document.getElementById('preview1');
+    const preview2 = document.getElementById('preview2');
+    const flash = document.getElementById('flash');
+    const previewCanvas = document.getElementById('preview-canvas');
+    const previewCtx = previewCanvas.getContext('2d');
+    const cameraContainer = document.getElementById('camera-container');
+    const resultContainer = document.getElementById('result-container');
+    const form = document.getElementById("send-form");
+
+    // Start camera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error('Error accessing camera:', err);
+        alert('Không thể truy cập camera. Vui lòng kiểm tra quyền truy cập.');
+      });
+
+    // Capture image function
+    function captureImage(targetPreview) {
+      canvas.width = 1400;
+      canvas.height = 1062;
+      ctx.drawImage(video, 0, 0, 1315, 1062);
+      targetPreview.src = canvas.toDataURL('image/png');
+      targetPreview.style.display = 'block';
+      // Flash effect
+      flash.classList.add('active');
+      setTimeout(() => flash.classList.remove('active'), 200);
+    }
+
+    // Update preview canvas
+    function updatePreview() {
+      previewCanvas.width = 1585;
+      previewCanvas.height = 2841;
+      const bgImage = new Image();
+      bgImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
+      bgImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480045/f1-01_y5nhsq.jpg';
+      bgImage.onload = () => {
+        previewCtx.drawImage(bgImage, 0, 0, 1585, 2841);
+        if (preview1.src) {
+          const img1 = new Image();
+          img1.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
+          img1.src = preview1.src;
+          img1.onload = () => {
+            previewCtx.save();
+            previewCtx.scale(-1, 1);
+            previewCtx.drawImage(img1, -1585 + 150, 385, 1400, 1062); // Image 1 at right 135, top 390
+            previewCtx.restore();
+            if (preview2.src) {
+              const img2 = new Image();
+              img2.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
+              img2.src = preview2.src;
+              img2.onload = () => {
+                previewCtx.save();
+                previewCtx.scale(-1, 1);
+                previewCtx.drawImage(img2, -1585 + 150, 1605, 1400, 1062); // Updated to 1550px as requested
+                previewCtx.restore();
+                const topImage = new Image();
+                topImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
+                topImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png';
+                topImage.onload = () => {
+                  previewCtx.drawImage(topImage, 0, 0, 1585, 2841);
+                };
+              };
+            } else {
+              const topImage = new Image();
+              topImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
+              topImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png';
+              topImage.onload = () => {
+                previewCtx.drawImage(topImage, 0, 0, 1585, 2841);
+              };
+            }
+          };
+        } else {
+          const topImage = new Image();
+          topImage.crossOrigin = 'Anonymous'; // Allow cross-origin image loading
+          topImage.src = 'https://res.cloudinary.com/dmanl2e81/image/upload/v1747480069/frame-01_hmrijn.png';
+          topImage.onload = () => {
+            previewCtx.drawImage(topImage, 0, 0, 1585, 2841);
+          };
+        }
+      };
+    }
+
+    // Countdown and capture
+    function startCapture() {
+      captureButton.disabled = true;
+      let count = 3;
+      countdownDisplay.textContent = count;
+      const countdown1 = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownDisplay.textContent = count;
+        } else {
+          countdownDisplay.textContent = '';
+          clearInterval(countdown1);
+          captureImage(preview1);
+          // Start second countdown
+          count = 3;
+          countdownDisplay.textContent = count;
+          const countdown2 = setInterval(() => {
+            count--;
+            if (count > 0) {
+              countdownDisplay.textContent = count;
+            } else {
+              countdownDisplay.textContent = '';
+              clearInterval(countdown2);
+              captureImage(preview2);
+              captureButton.disabled = false;
+              // Hide camera GUI, show result GUI
+              cameraContainer.style.display = 'none';
+              resultContainer.style.display = 'block';
+              updatePreview();
+            }
+          }, 1000);
+        }
+      }, 1000);
+    }
+
+    // Retake photos
+    function retakePhotos() {
+      // Clear captured images
+      preview1.src = '';
+      preview2.src = '';
+      preview1.style.display = 'none';
+      preview2.style.display = 'none';
+      // Switch back to camera GUI
+      resultContainer.style.display = 'none';
+      cameraContainer.style.display = 'block';
+    }
+
+    form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("user-name").value;
+  const email = document.getElementById("user-email").value;
+
+  previewCanvas.toBlob(async (blob) => {
+    const formData = new FormData();
+    formData.append("file", blob);
+    formData.append("upload_preset", "ml_default"); // Upload preset của bạn
+
+    try {
+      const res = await fetch("https://api.cloudinary.com/v1_1/dmanl2e81/auto/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      const imageUrl = data.secure_url;
+
+      // Gửi email
+      await emailjs.send("service_nqzmiuk", "template_i9ox99o", {
+        from_name: name,
+        from_email: email,
+        message: `${imageUrl}`,
+      });
+
+      alert("Gửi email thành công!");
+      form.reset();
+    } catch (err) {
+      console.error("Lỗi:", err);
+      alert("Có lỗi xảy ra khi gửi email.");
+    }
+  }, "image/png");
+});
+
+    // Event listeners
+    captureButton.addEventListener('click', startCapture);
+    retakeButton.addEventListener('click', retakePhotos);
+
+    function openPopup(url) {
+  window.open(url, "_blank", "width=600,height=600");
+}
+
+  </script>
+</body>
+</html>
